@@ -10,7 +10,7 @@
     
 """
 
-from homeassistant.const import TEMP_CELSIUS, CONF_MAC, CONF_SCAN_INTERVAL, CONF_SENSORS
+from homeassistant.const import TEMP_CELSIUS, CONF_MAC, CONF_SCAN_INTERVAL, CONF_SENSORS, ATTR_FRIENDLY_NAME
 from homeassistant.helpers.entity import Entity
 from bluepy import btle, thingy52
 import binascii
@@ -99,20 +99,21 @@ class NotificationDelegate(btle.DefaultDelegate):
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """ Set up the Thingy 52 temperature sensor"""
     global e_battery_handle
+    friendly_name = ""
+
     mac_address = config.get(CONF_MAC)
     conf_sensors = config.get(CONF_SENSORS)
-    print(conf_sensors)
+    friendly_name = config.get(ATTR_FRIENDLY_NAME)
+    if(friendly_name is None):
+        friendly_name = "Thingy:"
+
     scan_interval = config.get(CONF_SCAN_INTERVAL)
     gas_interval = config.get(CONF_GAS_INT)
-    print (scan_interval)
-    print(type(scan_interval))
     scan_interval = scan_interval.total_seconds()
-    print (scan_interval)
     notification_interval = int(scan_interval) * 1000
     sensors = []
-    print("#[THINGYSENSOR]: Connecting to Thingy with address {}...".format(mac_address))
+    print("#[THINGYSENSOR]: Connecting to Thingy {} with address {}...".format(friendly_name, mac_address))
     thingy = thingy52.Thingy52(mac_address)
-
 
     print("#[THINGYSENSOR]: Configuring and enabling environment notifications...")
     thingy.environment.enable()
@@ -120,11 +121,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     # Enable notifications for enabled services
     # Update interval 1000ms = 1s
     if "temperature" in conf_sensors:
-        print("Enabling notification for temperature")
         thingy.environment.set_temperature_notification(True)
         thingy.environment.configure(temp_int=notification_interval)
     if "humidity" in conf_sensors:
-        print("Enabling notification for humidity")
         thingy.environment.set_humidity_notification(True)
         thingy.environment.configure(humid_int=notification_interval)
     if ( ("co2" in conf_sensors) or ("tvoc" in conf_sensors) ):
@@ -143,7 +142,8 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
     for sensorname in conf_sensors:
         print("Adding sensor: {}".format(sensorname))
-        sensors.append(Thingy52Sensor(thingy, sensorname, SENSOR_UNITS[sensorname]))
+        sensors.append(Thingy52Sensor(thingy, sensorname,
+                                      friendly_name, SENSOR_UNITS[sensorname]))
     
     add_devices(sensors)
     thingy.setDelegate(NotificationDelegate(sensors))
@@ -151,10 +151,11 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class Thingy52Sensor(Entity):
     """Representation of a Sensor."""
 
-    def __init__(self, thingy, name, unit_measurement=TEMP_CELSIUS):
+    def __init__(self, thingy, name, friendly_name, unit_measurement=TEMP_CELSIUS):
         """Initialize the sensor."""
         self._thingy = thingy
         self._name = name
+        self._friendly_name = friendly_name
         self._state = None
         self._unit_measurement = unit_measurement
         
@@ -163,7 +164,7 @@ class Thingy52Sensor(Entity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return ("Thingy52: " + self._name)
+        return ("{} {}".format(self._friendly_name, self._name))
 
     @property
     def state(self):
