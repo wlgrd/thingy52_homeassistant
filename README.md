@@ -29,8 +29,14 @@
 
 Clone or download this folder into your configurations directory, so that you have `<configfolder>/custom_components/sensor/thingy52.py`
 
+Tips: When testing things, you might want to lower the `scan_interval` and `gas_interval` so you get data more often.
+The default 60 seconds is to preserve power. To saven even more power, connect to the Thingy:52 from the Thingy-app 
+[google play](https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrfthingy) and decrease the connection interval. 
+Will try and support this from this sensor in the future.
+
 ## Known issues
 * Will not handle automatic reconnections
 * Untested with several units
+* Not handling bad integers from config
 
 Pull requests are very welcome!
