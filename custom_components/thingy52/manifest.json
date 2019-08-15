@@ -3,6 +3,6 @@
   "name": "Thingy:52 Sensor for Home Assistant",
   "documentation": "https://github.com/wlgrd/thingy52_homeassistant",
   "dependencies": [],
-  "codeowners": ["@chriswils"],
+  "codeowners": ["@wlgrd"],
   "requirements": ["bluepy"]
 }
