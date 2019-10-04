@@ -61,16 +61,17 @@ sensor:
 
   - platform: thingy52
     friendly_name: wayland
-    scan_interval: 60
+    scan_interval:
+      seconds: 60
     gas_interval: 3
     mac: "dc:05:fb:ba:58:b6"
     sensors:
-      temperature:
-      humidity:
-      co2:
-      tvoc:
-      pressure:
-      battery:
+      - temperature
+      - humidity
+      - co2
+      - tvoc
+      - pressure
+      - battery
 
 
 # Text to speech
